@@ -25,21 +25,21 @@ class HotelController extends Controller
     use ApiResponse;
 
     public function index(searchRequest $request)
-    {   
+    {
         $search = trim($request->input('search', ''));
-        $filters = (new Hotel)->parseSearchInput($search); 
-    
+        $filters = (new Hotel)->parseSearchInput($search);
+
         $hotels = Hotel::with('rooms')
                     ->withCount('rooms')
                     ->filter($filters)
-                    ->paginate(config('pagination.hotels_per_page')) 
-                    ->withQueryString(); 
+                    ->paginate(config('pagination.hotels_per_page'))
+                    ->withQueryString();
 
         return HotelResource::collection($hotels)
                     ->response()
-                    ->setStatusCode(Response::HTTP_OK);  
+                    ->setStatusCode(Response::HTTP_OK);
     }
- 
+
     public function show(RoomFilterRequest $request, string $id)
     {
         $hotel = Hotel::findOrFail($id);
@@ -58,22 +58,22 @@ class HotelController extends Controller
     public function destroy($id)
     {
         $hotel = Hotel::find($id);
-    
+
         if (!$hotel) {
             return $this->errorResponse('Hotel not found', Response::HTTP_NOT_FOUND);
        }
-   
+
         $hotel->delete();
         return $this->successResponse([], 'Hotel deleted successfully', Response::HTTP_OK);
     }
 
 
     public function bulkDestroy(BulkRequest $request) {
-        
-        $ids = $request->input('ids', []); 
+
+        $ids = $request->input('ids', []);
 
         if (empty($ids)) {
-            return $this->errorResponse([], 'No IDs provided', Response::HTTP_BAD_REQUEST); 
+            return $this->errorResponse([], 'No IDs provided', Response::HTTP_BAD_REQUEST);
         }
         $hotels = Hotel::whereIn('id', $ids)->get();
         $foundIds = $hotels->pluck('id')->toArray();
@@ -84,7 +84,7 @@ class HotelController extends Controller
                 'not_found_ids' => $ids
             ], 'No hotels found for deletion', Response::HTTP_NOT_FOUND);
         }
-        
+
         Hotel::whereIn('id', $foundIds)->delete();
 
         activity()
@@ -107,9 +107,9 @@ public function store(StoreHotelRequest $request)
     $data = $request->validated();
     Log::info('Hotel store request validated', ['data' => $data]);
     try {
-        
-        $data['image'] = $request->file('image') 
-        ? (new Hotel)->uploadImage($request->file('image')) 
+
+        $data['image'] = $request->file('image')
+        ? (new Hotel)->uploadImage($request->file('image'))
         : null;
 
         $hotel = new Hotel;
@@ -121,7 +121,7 @@ public function store(StoreHotelRequest $request)
 
         $hotelId = $hotel->id;
         $date = now()->toDateString();
-        
+
 
         $redisKey = "hotel:{$hotelId}:{$date}";
 
@@ -158,7 +158,7 @@ public function getFromRedisByDate($startdate, $enddate)
         if ($startdate > $enddate) {
             return $this->errorResponse(
                 'Start date must be before or equal to end date',
-                Response::HTTP_UNPROCESSABLE_ENTITY 
+                Response::HTTP_UNPROCESSABLE_ENTITY
             );
         }
 
@@ -187,7 +187,7 @@ public function getFromRedisByDate($startdate, $enddate)
         if (empty($hotels)) {
             return $this->errorResponse("No hotels found in Redis between {$startdate} and {$enddate}", Response::HTTP_NOT_FOUND);
         }
-        return $this->successResponse($hotel, "Hotels between {$startdate} and {$enddate}", Response::HTTP_CREATED);
+        // return $this->successResponse($hotel, "Hotels between {$startdate} and {$enddate}", Response::HTTP_CREATED);
 
     } catch (\Exception $e) {
         Log::error('Error fetching hotels from Redis: ' . $e->getMessage(), [
@@ -204,9 +204,9 @@ public function storeInRedis(StoreHotelRequest $request)
 {
     $data = $request->validated();
     try {
-        
-        $data['image'] = $request->file('image') 
-        ? (new Hotel)->uploadImage($request->file('image')) 
+
+        $data['image'] = $request->file('image')
+        ? (new Hotel)->uploadImage($request->file('image'))
         : null;
 
         $hotel = new Hotel;
@@ -269,7 +269,7 @@ public function update(redisrequest $request, $hotelId, $start_date, $end_date)
 {
     try {
         $data = $request->validated();
-        
+
         $redisKey = "hotel:{$hotelId}:{$start_date}:{$end_date}";
 
         $hotelData = Redis::get($redisKey);
