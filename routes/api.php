@@ -37,7 +37,7 @@ Route::get('/test-log', function () {
 
 Route::get('/redis-test', function () {
     Redis::set('name', 'AYA');
-    return Redis::get('name'); 
+    return Redis::get('name');
 });
 
 Route::get('/test/exception', function () {
@@ -60,10 +60,10 @@ Route::get('/test/http-timeout', function () {
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/hotels', [HotelController::class, 'store']);
 
 Route::middleware([SetLocale::class, 'auth:sanctum'])->group(function () {
     Route::get('/hotels', [HotelController::class, 'index']);
-    Route::post('/hotels', [HotelController::class, 'store']);
     Route::get('/hotels/{id}',[HotelController::class, 'show']);
     Route::delete('/hotels/{id}', [HotelController::class, 'destroy']);
     Route::delete('/bulk', [HotelController::class, 'bulkDestroy']);

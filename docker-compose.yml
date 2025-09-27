@@ -84,7 +84,17 @@ services:
       mysqlrouter --config /etc/mysqlrouter/mysqlrouter.conf --user=mysqlrouter
       "
 
-
+  mysql-watchdog:
+    image: mysql:8.0
+    container_name: mysql-watchdog
+    volumes:
+      - ./scripts/watchdog.sh:/usr/local/bin/watchdog.sh:ro
+    entrypoint: ["/bin/bash","/usr/local/bin/watchdog.sh"]
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+    networks:
+      - db-network
+    restart: unless-stopped
 
   # Optional: Adminer for Database Management
   adminer:

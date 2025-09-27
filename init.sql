@@ -501,7 +501,7 @@ COMMIT;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 
 -- -- Set up replication after all tables are created
--- CHANGE MASTER TO 
+-- CHANGE MASTER TO
 -- MASTER_HOST='mysql-primary',
 -- MASTER_USER='replicator',
 -- MASTER_PASSWORD='replica_pass',
